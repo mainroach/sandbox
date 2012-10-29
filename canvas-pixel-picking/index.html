@@ -1,0 +1,200 @@
+
+
+<script src="core.js"></script>
+<canvas id="cvs" width="512" height="512"></canvas>
+
+<script>
+
+var canvas = document.getElementById('cvs');
+var ctx = canvas.getContext('2d');
+canvas.addEventListener("mouseup", mouseClick, false);
+
+function checkWait(conditionFunction, resultFunction)
+		{
+			var tev = setInterval(function()
+				{
+					if(conditionFunction())
+					{
+						resultFunction(); 
+						clearInterval(tev)
+					}
+				}, 1000);
+		}
+		
+//We need to fetch the pixel data for an image.
+//Since it is a PNG file, it's simplier to just draw it to canvas, and use getImageData to read the raw pixels back. 
+//We could also store RAW image data for each .png, but that would increase asset-size.
+//We could also write a javascript png opener; but that's overkill
+var offScreenCanvas= document.createElement('canvas');
+var fetch_ctx = offScreenCanvas.getContext('2d');
+//CLM set a max size for our offscreen fetch canvas
+offScreenCanvas.width = 128;
+offScreenCanvas.height = 128;
+function fetchImageData(imgObject, imgwidth,imgheight)
+{
+	fetch_ctx.clearRect(0,0,128,128);
+	fetch_ctx.drawImage(imgObject, 0, 0);
+	var last = Date.now();
+	//CLM note this keeps an additional in-memory copy 
+	var imgDat = fetch_ctx.getImageData(0,0, imgwidth, imgheight);
+	var current = Date.now();
+	var delta = (current - last)
+	console.log("getImageData " + delta  + "ms");
+	
+	return imgDat;
+}
+
+//--------------
+SpriteProto = Class.extend({
+	filename:"",
+	imgHandle:null,
+	imgData:null,
+	size:{w:0,h:0},
+	load : function(filename,w,h)
+	{
+		var targetSpriteProto = this;
+		this.size.w = w;
+		this.size.h = h;
+		var img = new Image();
+		img.onload = function(){
+
+			targetSpriteProto.imgHandle = img;
+			targetSpriteProto.imgData = fetchImageData(targetSpriteProto.imgHandle,w,h);
+			
+			
+		}
+		img.src = filename; 
+	},
+	isPixelTransparent:function(lclx,lcly)
+	{
+		var alphaThreshold = 50;
+		var idx = (lclx*4) + lcly * (this.imgData.width*4);
+	
+		var alpha = this.imgData.data[idx + 3];
+	
+		//test against a threshold
+		return alpha > alphaThreshold;
+	}
+	
+});
+
+//--------------
+SpriteInstance = Class.extend({
+	id:0,
+	zIndex:50,
+	pos:{x:0,y:0},
+	size:{w:0,h:0},
+	spriteHandle:null,
+});
+
+
+//--------------
+function mouseClick(e)
+{
+	findClickedSprite(e.offsetX,e.offsetY);
+}
+//--------------
+function findClickedSprite(x,y)
+{
+	var pickedSprite = null;
+	var tgtents = spriteInstances;
+	//loop through all sprites 
+	for(var i =0; i < tgtents.length; i++)
+	{
+		var sp = tgtents[i];
+		//pick is not intersecting with this sprite
+		if(	x < sp.pos.x || x > sp.pos.x + sp.size.w ||
+			y < sp.pos.y || y > sp.pos.y + sp.size.h)
+			continue;
+		var ps = sp.spriteHandle;
+		//get local coords and find the alpha of the pixel
+		var lclx = x - sp.pos.x;
+		var lcly = y - sp.pos.y;
+		if(ps.isPixelTransparent(lclx,lcly))
+		{
+			//do depth test (if applicable)
+			if(pickedSprite && sp.zIndex < pickedSprite.zIndex)
+				continue;
+			pickedSprite = sp;
+		}
+	}
+	
+	
+	
+	if(pickedSprite != null)
+	{
+		ctx.strokeRect(pickedSprite.pos.x, pickedSprite.pos.y, pickedSprite.size.w,pickedSprite.size.h);
+	}
+	
+	
+}
+//--------------
+var protoSprites = new Array();
+var spriteInstances = new Array();
+//--------------
+function loadProtos()
+{
+	//technically, this should be an atlas definition!
+	var imgs=[
+		{nm:"0.png",w:66,h:42},
+		{nm:"1.png",w:66,h:52},
+		{nm:"2.png",w:66,h:46},
+		{nm:"3.png",w:70,h:65}
+		];
+	for(var i =0; i < imgs.length; i++)
+	{
+		var sp = new SpriteProto();
+		sp.load(imgs[i].nm,imgs[i].w,imgs[i].h);
+		protoSprites.push(sp);
+	}
+}
+
+//--------------
+function generateInstances()
+{
+	var numSprites = 4096; //magic number
+	for(var i = 0; i < numSprites; i++)
+	{
+		var sp = new SpriteInstance();
+		sp.id = i;
+		sp.zIndex = i; //just to keep my sanity...
+		sp.pos.x = Math.floor(Math.random() * (500)); //random point on canvas
+		sp.pos.y = Math.floor(Math.random() * (500));
+		var idx = Math.floor(Math.random() * (protoSprites.length));
+		sp.spriteHandle = protoSprites[idx];
+		sp.size = sp.spriteHandle.size;
+		
+		spriteInstances.push(sp);
+	}
+}
+//--------------
+function drawSprites()
+{
+	//note that zindex = i here, so this rendering is correct.
+	for(var i =0; i < spriteInstances.length;i++)
+	{
+		var sp = spriteInstances[i];
+		var ps = sp.spriteHandle;
+		ctx.drawImage(ps.imgHandle,sp.pos.x, sp.pos.y);
+	}
+}
+//--------------
+//load prototype data
+loadProtos();
+
+//wait for our proto object images to be loaded!
+checkWait( 
+	function(){
+		for(var i =0; i < protoSprites.length; i++)
+			if(protoSprites[i].imgData == null)
+				return false;
+		return true;
+	},
+	function(){
+		generateInstances();
+		drawSprites();
+		}
+	);
+//--------------
+
+</script>
