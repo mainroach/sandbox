@@ -1,0 +1,86 @@
+
+<html>
+<head>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js"></script>
+<script>
+//---------------------------------
+function xhrGet(reqUri,reqCred,callback)
+{
+	var xhr = new XMLHttpRequest();
+    xhr.open("GET", reqUri, true);
+    xhr.onreadystatechange = function() 
+	{
+      if (xhr.readyState == 4 && xhr.responseText !="")
+	  {
+		if(callback != null)
+			callback(xhr);
+      }
+    };
+	if(reqCred)
+		xhr.withCredentials = "true";
+    xhr.send();
+}
+//---------------------------------
+function xhrPost(reqUri,bodyData,callback)
+{
+	var xhr = new XMLHttpRequest();
+    xhr.open("POST", reqUri, true);
+    xhr.onreadystatechange = function() 
+	{
+      if (xhr.readyState == 4) 
+	  {
+		if(callback != null)
+			callback(xhr);
+      }
+    };
+	
+    //Send the proper header information along with the request
+  //CLM setting this header encodes the meta-data as URL as well (meaning it hacks up the JSON information so we can't parse it on the server :(
+//  xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	if(bodyData)
+		xhr.send(bodyData);
+	else
+		xhr.send(reqUri);
+}
+
+//---------------------------------
+function addBatchEvent(metadata)
+{
+	xhrPost("http://localhost:8080/s/addbatch", metadata,function(xhr) {console.log(xhr.response);});
+}
+//---------------------------------
+function multiEventSmart()
+{
+	var localGatheredStats="";
+	for(var i =0; i < 2000; i++)
+		localGatheredStats += "{\'name\':\'test\',\'type\':\'test" + i + "\',\'metadata\':{\'room\':\'3\',\'playerID\':\'88\'}}";
+		
+	addBatchEvent(localGatheredStats);
+}
+//---------------------------------
+function fetchBlobData()
+{
+	xhrGet("http://localhost:8080/s/blobs",false,function(xhr) {console.log(xhr.response);});
+}
+
+</script>
+
+
+
+</head>
+<body>
+<h2>Stats gathering test to GAE</h2>
+<i>It's all about the <a href="https://cloud.google.com/pricing/">pricing</a>. Can we do 40MM stats/day for less than $100?</i><br><br>
+Generate Events : <br>
+<button onclick="multiEventSmart()">2k Events (batched) </button>144890b per write is $0.00001/mo @($0.13 / G / month)<br>
+<br>Fetch Events Results:<br>
+<button onclick="fetchBlobData()">Fetch Blob Data </button>(view console)<br>
+
+<div id="bodycontent">
+
+</div>
+	
+</body>
+</html>
+
+

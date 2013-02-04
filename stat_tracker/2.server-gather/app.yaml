@@ -1,0 +1,24 @@
+application: stattest
+version: dev
+runtime: python27
+threadsafe: true
+api_version: 1
+
+inbound_services:
+- warmup
+
+handlers:  
+
+- url: /
+  static_files: index.html
+  upload: index.html
+  
+  
+- url: /(.+\.(js))
+  static_files: \1
+  upload: (.+\.(js))
+  mime_type: text/javascript
+  
+
+- url: /.*
+  script: main.app

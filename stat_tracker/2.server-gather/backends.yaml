@@ -1,0 +1,8 @@
+backends:
+
+# handle gathering, compressing, submitting of stats
+- name: statgather
+  class: B1
+  instances: 1
+  options: dynamic, public
+  start: ah_start_backend.py
