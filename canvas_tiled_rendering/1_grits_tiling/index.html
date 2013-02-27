@@ -1,0 +1,36 @@
+<html>
+	<head>
+	<script>
+		 window.requestAnimFrame = (function(){
+      return  window.requestAnimationFrame       || 
+              window.webkitRequestAnimationFrame || 
+              window.mozRequestAnimationFrame    || 
+              window.oRequestAnimationFrame      || 
+              window.msRequestAnimationFrame     || 
+              function(/* function */ callback, /* DOMElement */ element){
+                window.setTimeout(callback, 1000 / 60);
+              };
+    })();
+    </script>
+		<script src="../core.js"> </script>
+		<script src="../coreGame.js"> </script>
+		<script src="../mrdoob-stats.js"> </script>
+		<script src="TILEDmap.js"> </script>
+		
+		<script type="text/javascript">
+
+</script>
+	</head>
+	<h1>Canvas Test - Pre-Cached rendering (GRITS)</h1><br />
+	W/S to move, A/D to rotate<br>
+	This map uses the tiling method from GRITS, where we pre-render the entire world into a series of off-screen canvases<br>
+	World is pretty large, you might run for a while...<br>	
+	<hr>
+	<canvas id="cvs" width="1000" height="1000"></canvas>
+	
+	<script>
+		init();
+
+		step();
+	</script>
+</html>

@@ -25,15 +25,20 @@ USAGE
 Then you need to add begin/end scopes around blocks of code you are interested in timing:
 _needle.begin("start of scope");_
     _//....do some stuff_
-    _needle.end()_
+_needle.end()_
 
     
 Also fine to nest needle scopes:
 _needle.begin("start of scope");_
-        _needle.begin("MORE scope");_
-        _//....do some stuff_
-        _needle.end()_
+    _needle.begin("MORE scope");_
+    _//....do some stuff_
     _needle.end()_
+_needle.end()_
 
 
 Calling _needle.init_ again will clean the needle, so you can re-use it immediatly.
+
+Things I'd like to do
+--------------
+* Reduce memory footprint by storing time as a uint32 like WTF does : https://github.com/google/tracing-framework/blob/master/src/wtf/wtf.js#L85
+
