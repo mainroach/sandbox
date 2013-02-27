@@ -1,7 +1,7 @@
 Needle.js
 =========
 
-needle.js is a minimalistic javascript inline-profiling library which aims to add the least amount of memory and runtime overhead possible. Right now we have a _~0.0004ms_ overhead per event;  (e.g 10,000 begin/end blocks adds about ~7ms overhead to your frame.)
+needle.js is a minimalistic javascript inline-profiling library which aims to add the least amount of memory and runtime overhead possible. Right now we have a _~0.0004ms_ overhead (tested on windows) per event;  (e.g 10,000 begin/end blocks adds about ~7ms overhead to your frame.)
 
 Why needle.js?
 -----------

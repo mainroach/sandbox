@@ -37,8 +37,9 @@ var needle={
 
     mBatches:[],
 
-    init:function(preAllocSamples)
+    init:function(preAllocSamples, bucketSize)
     {
+        this.mArraySize = bucketSize;
         this.mBatchIndex = 0;
         this.mArrayIndex = 0;
 
@@ -98,20 +99,6 @@ var needle={
         btch.mSamTime[this.mArrayIndex] = window.performance.now();
 
         this.mArrayIndex++;
-        if(this.mArrayIndex + 1 >= this.mArraySize)
-        {
-            if(this.mBatchIndex  >= this.mBatches.length - 1)
-            {
-                this.addBatch();
-                this.mBatchIndex = this.mBatches.length-1;
-
-            }
-            else
-            {
-                this.mBatchIndex++;
-            }
-            this.mArrayIndex = 0;
-        }
     },
 
     // Call this at the end of sampling to get a list of all samples in a usable form
