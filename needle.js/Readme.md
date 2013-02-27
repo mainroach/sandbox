@@ -20,12 +20,14 @@ USAGE
 --------------
 
  Call _needle.init_ with the number of up-front samples you want to allocate for:
- ```needle.init(10000);```
+ ```needle.init(10000);
+ ```
  
 Then you need to add begin/end scopes around blocks of code you are interested in timing:
 ```needle.begin("start of scope");
     ....do some stuff
-    needle.end()```
+    needle.end()
+```
     
 Also fine to nest needle scopes:
 ```needle.begin("start of scope");
