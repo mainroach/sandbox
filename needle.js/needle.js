@@ -39,7 +39,7 @@ var needle={
 
     init:function(preAllocSamples, bucketSize)
     {
-        this.mArraySize = bucketSize;
+        
         this.mBatchIndex = 0;
         this.mArrayIndex = 0;
 
@@ -47,6 +47,8 @@ var needle={
 
         for(var i =0; i < numBatches; i++)
             this.addBatch();
+
+        this.mCurrBatch = this.mBatches[0];
     },
 
     addBatch:function()
@@ -75,7 +77,7 @@ var needle={
         btch.mSamTime[this.mArrayIndex] = window.performance.now();
 
         this.mArrayIndex++;
-        if(this.mArrayIndex + 1 >= this.mArraySize)
+        if(this.mArrayIndex  >= this.mArraySize)
         {
             if(this.mBatchIndex >= this.mBatches.length-1)
             {
@@ -85,6 +87,7 @@ var needle={
             else
             {
                 this.mBatchIndex++;
+                this.mCurrBatch = this.mBatches[this.mBatchIndex];
             }
             this.mArrayIndex = 0;
         }
@@ -99,6 +102,20 @@ var needle={
         btch.mSamTime[this.mArrayIndex] = window.performance.now();
 
         this.mArrayIndex++;
+        if(this.mArrayIndex  >= this.mArraySize)
+        {
+            if(this.mBatchIndex >= this.mBatches.length-1)
+            {
+                this.addBatch();
+                this.mBatchIndex = this.mBatches.length-1;
+            }
+            else
+            {
+                this.mBatchIndex++;
+                this.mCurrBatch = this.mBatches[this.mBatchIndex];
+            }
+            this.mArrayIndex = 0;
+        }
     },
 
     // Call this at the end of sampling to get a list of all samples in a usable form
@@ -111,6 +128,8 @@ var needle={
             var bkt = this.mBatches[q];
             for(var i =0; i < this.mArraySize; i++)
             {
+                if(bkt.mSamType[i] == 0)
+                    continue;
                  var evt = {
                     type:bkt.mSamType[i],
                     name:bkt.mSamName[i],
@@ -123,6 +142,8 @@ var needle={
         var bkt = this.mBatches[this.mBatchIndex];
             for(var i =0; i < this.mArrayIndex; i++)
             {
+                if(bkt.mSamType[i] == 0)
+                    continue;
                  var evt = {
                     type:bkt.mSamType[i],
                     name:bkt.mSamName[i],
@@ -134,10 +155,17 @@ var needle={
         return oneArray;
     },
 
+    // once you've added needle sampling code all over your codebase, you can null it's influence out via calling needle.makeBlunt
+    // this will stub out the begin/end functions so that you don't incur overhead
+    makeBlunt:function()
+    {
+        this.begin = function(name){};
+        this.end = function(){};
+    }
+
 };
 
 // Right now simply dumps linear results out to console; should do something smarter with outputing a about:tracing layout.
-
 needle.consolePrint = function(samples)
 {
     var stack = new Array();
@@ -152,7 +180,7 @@ needle.consolePrint = function(samples)
         {
             var lastEvt = stack.pop();
             var delta = (evt.time - lastEvt.time ) ;
-            //console.log(needle.mLabelArray[lastEvt.name] + ": " + delta + "ms");
+
             console.log(lastEvt.name + ": " + delta + "ms");
         }   
     }

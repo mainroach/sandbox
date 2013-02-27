@@ -92,7 +92,7 @@ var pure = dv;
 dv = 0;
 for(var i =0; i < numSamples; i++)
 {
-	needle.init(10000,2048);//clean needle each run
+	needle.init(10000);//clean needle each run
 	st = window.performance.now();
 	makeWithCountDownPost(numLoops);
 	dt = window.performance.now() - st;
@@ -127,7 +127,7 @@ str += ("console.time Overhead per event: " + consTime + " / " + expData.length 
 
 document.getElementById("needle_results").innerHTML = str;
 
-
+//needle.consolePrint(expData);
 
 </script>
 
