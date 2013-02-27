@@ -1,0 +1,133 @@
+
+<html>
+<div id="needle_results">working...</div>
+</html>
+
+<script src="needle.js" ></script>
+<script>
+
+
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//WORST CASE TESTING - No warmup since dev's won't work that way
+
+function makeWithCountDownPostClean(len) 
+{
+    var a;
+    a = new Array(len);
+    while (len-- > 0) 
+    {
+    	var k = Math.random();
+        a[len] = Math.sin(k);
+    }
+    return a;   
+}
+
+function makeWithCountDownPost(len) 
+{
+
+	needle.begin("makeWithCountDownPost");
+    var a;
+
+    a = new Array(len);
+    while (len-- > 0) 
+    {
+    	needle.begin("innerLoop");
+
+    	var k = Math.random();
+        a[len] = Math.sin(k);
+
+        needle.end();
+
+    }
+    
+    needle.end();
+    return a;
+    
+}
+
+function makeWithCountDownPostConsoleTime(len) 
+{
+
+	console.time("makeWithCountDownPost");
+    var a;
+
+    a = new Array(len);
+    while (len-- > 0) 
+    {
+    	console.time("innerLoop");
+
+    	var k = Math.random();
+        a[len] = Math.sin(k);
+
+        console.timeEnd("innerLoop");
+
+    }
+    
+    console.timeEnd("makeWithCountDownPost")
+    return a;
+    
+}
+
+var numSamples = 10;
+var numLoops = 10000;	//let's run 20000 times
+///////////////////////////////////////////////
+//determine what our baseline perf is
+var dv = 0;
+for(var i =0; i < numSamples; i++)
+{
+	st = window.performance.now();
+	makeWithCountDownPostClean(numLoops);
+	dt = window.performance.now() - st;
+	dv += dt;
+}
+dv = dv/numSamples;
+var pure = dv;
+
+//////////////////////////////////////////////
+//test needle
+dv = 0;
+for(var i =0; i < numSamples; i++)
+{
+	needle.init(10000);//clean needle each run
+	st = window.performance.now();
+	makeWithCountDownPost(numLoops);
+	dt = window.performance.now() - st;
+	dv += dt;
+}
+
+var needtime = dv/numSamples;
+var overhead = (needtime-pure);
+
+var expData = needle.getExportReadyData();
+
+/////////////////////////////////////////////
+//test console.time
+dv = 0;
+for(var i =0; i < numSamples; i++)
+{
+	st = window.performance.now();
+	makeWithCountDownPostConsoleTime(numLoops);
+	dt = window.performance.now() - st;
+	dv += dt;
+}
+var consTime = dv/numSamples;
+
+//dump data
+var str = "";
+str += ("No needle: " + pure ) + "ms<br><br>";
+str += ("needle: " + needtime) + "ms<br>";
+str += ("needle Overhead: " + overhead) + "ms<br>";
+str += ("needle Overhead per event: " + overhead + " / " + expData.length + " events = <b>" + overhead / (expData.length)) + "ms</b><br><br>";
+str += ("console.time: " + consTime ) + "ms<br>";
+str += ("console.time Overhead per event: " + consTime + " / " + expData.length + " events = <b>" + consTime / (expData.length)) + "ms</b><br>";
+
+document.getElementById("needle_results").innerHTML = str;
+
+
+
+</script>
+
