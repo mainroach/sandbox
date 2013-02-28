@@ -20,27 +20,27 @@ USAGE
 --------------
 
  Call _Needle.init_ with the number of up-front samples you want to allocate for:
- > _Needle.init(10000);_
+` _Needle.init(10000);_ `
  
 Then you need to add begin/end scopes around blocks of code you are interested in timing:
-> _Needle.beginCoarse("start of scope");_
->     _//....do some stuff_
-> _Needle.endCoarse()_
+` _Needle.beginCoarse("start of scope");_
+     _//....do some stuff_
+ _Needle.endCoarse()_`
 
     
 Also fine to nest Needle scopes:
-> _Needle.beginCoarse("start of scope");_
->    _Needle.beginCoarse("MORE scope");_
->    _//....do some stuff_
->    _Needle.endCoarse()_
-> _Needle.endCoarse()_
+` _Needle.beginCoarse("start of scope");_
+    _Needle.beginCoarse("MORE scope");_
+    _//....do some stuff_
+    _Needle.endCoarse()_
+ _Needle.endCoarse()_`
 
 To clean/reset Needle simply call:
-> needle.init(..)
+` needle.init(..) `
 again to clean and resute it immediatly.
 
 You can optionally turn off needle by calling
-> needle.makeBlunt();
+` needle.makeBlunt(); `
 Which will replace the begin/end functions with stub operations; This is highly useful for shipping production builds (w/o wanting to strip all the needle references from the codebase)
 
 Choosing the right API
