@@ -13,29 +13,9 @@ See the License for the specific language governing permissions and
 #limitations under the License.*/
 
 /*
-    Needle.js is a javascript inline-profiling library which aims to add the least amount of memory and runtime overhead possible. Right now we have a ~0.0004ms overhead per event; 
-    For example, 10,000 begin/end blocks adds about ~7ms overhead to your frame.
-
-    Why needle.js?
-    console.begin/endTime add too much overhead (~0.02ms per sample), and are not usable for fine-grain sampling. 
-
-    Takes advantage of the fact that static strings should be hashed in JS already. So doing being("foo") will just pass a reference around.
-    That being said being("foo" + str(entity.ID)) will add a NEW string to the JS heap, EACH call; So try to stay using static strings.
-
-    Note this library uses window.performance.now(); which is a high-frequency timer; but does add overhead (88% right now) to the overall sampling process.
-
-USAGE:
-    needle.init(preAllocatedSampleSize); <-- number of up-front samples you want to allocate for
-    needle.begin("start of scope");
-    ....do some stuff
-    needle.end()
-
-    fine to nest needle scopes
-    needle.begin("start of scope");
-        needle.begin("MORE scope");
-        ....do some stuff
-        needle.end()
-    needle.end()    
+    Needle.js is a javascript inline-profiling library which aims to add the least amount of memory and runtime overhead possible. Right now we have a ~0.0001ms - 0.0004ms overhead per event; 
+    For example, 10,000 begin/end blocks adds about ~2.6ms - 7ms overhead to your frame.
+    See github.com/mainroach for more.
 */
 
 var eNeedleEventType={
@@ -51,9 +31,8 @@ var needle={
 
     mBatches:[],
 
-    init:function(preAllocSamples, bucketSize)
+    init:function(preAllocSamples)
     {
-        
         this.mBatchIndex = 0;
         this.mArrayIndex = 0;
 
@@ -65,6 +44,7 @@ var needle={
         this.mCurrBatch = this.mBatches[0];
     },
 
+    // Add a batch, mostly internal only...
     addBatch:function()
     {
         var btc = {};
@@ -81,8 +61,8 @@ var needle={
         this.mBatches.push(btc);
     },
 
-    // Called at the start of a scope
-    begin:function(name)
+    // Called at the start of a scope, returns < 1ms precision
+    beginFine:function(name)
     {
         var btch = this.mCurrBatch;
 
@@ -107,13 +87,64 @@ var needle={
         }
     },
 
-    // Called at the end of a scope.
-    end:function()
+    // Called at the end of a scope, returns < 1ms precision
+    endFine:function()
     {
         var btch = this.mCurrBatch;
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
         btch.mSamTime[this.mArrayIndex] = window.performance.now();
+
+        this.mArrayIndex++;
+        if(this.mArrayIndex  >= this.mArraySize)
+        {
+            if(this.mBatchIndex >= this.mBatches.length-1)
+            {
+                this.addBatch();
+                this.mBatchIndex = this.mBatches.length-1;
+            }
+            else
+            {
+                this.mBatchIndex++;
+                this.mCurrBatch = this.mBatches[this.mBatchIndex];
+            }
+            this.mArrayIndex = 0;
+        }
+    },
+
+     // Called at the start of a scope, returns 1ms precision
+    beginCoarse:function(name)
+    {
+        var btch = this.mCurrBatch;
+
+        btch.mSamType[this.mArrayIndex] = eNeedleEventType.cBegin;
+        btch.mSamName[this.mArrayIndex] = name;
+        btch.mSamTime[this.mArrayIndex] = Date.now();
+
+        this.mArrayIndex++;
+        if(this.mArrayIndex  >= this.mArraySize)
+        {
+            if(this.mBatchIndex >= this.mBatches.length-1)
+            {
+                this.addBatch();
+                this.mBatchIndex = this.mBatches.length-1;
+            }
+            else
+            {
+                this.mBatchIndex++;
+                this.mCurrBatch = this.mBatches[this.mBatchIndex];
+            }
+            this.mArrayIndex = 0;
+        }
+    },
+
+    // Called at the end of a scope, returns 1ms precision.
+    endCoarse:function()
+    {
+        var btch = this.mCurrBatch;
+
+        btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
+        btch.mSamTime[this.mArrayIndex] = Date.now();
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -173,8 +204,10 @@ var needle={
     // this will stub out the begin/end functions so that you don't incur overhead
     makeBlunt:function()
     {
-        this.begin = function(name){};
-        this.end = function(){};
+        this.beginCoarse = function(name){};
+        this.endCoarse = function(){};
+        this.beginFine = function(name){};
+        this.endFine = function(){};
     }
 
 };
