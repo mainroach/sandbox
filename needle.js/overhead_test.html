@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 #limitations under the License.*/-->
 <html>
+<div>This test will time Needle.js per-event overhead.</div><hr>
+
 <div id="needle_results">working...</div>
 
 </html>
@@ -111,6 +113,7 @@ dv = 0;
 for(var i =0; i < numSamples; i++)
 {
 	needle.init(10000,false);//clean needle each run
+    needle.enable();
 	st = window.performance.now();
 	makeWithCountDown(numLoops);
 	dt = window.performance.now() - st;
@@ -127,6 +130,7 @@ dv = 0;
 for(var i =0; i < numSamples; i++)
 {
     needle.init(10000,true);//clean needle each run
+    needle.enable();
     st = window.performance.now();
     makeWithCountDown(numLoops);
     dt = window.performance.now() - st;

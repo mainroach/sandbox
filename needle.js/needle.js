@@ -35,6 +35,7 @@ var needle={
 
     init:function(preAllocSamples, isHighPrecision)
     {
+        this.mIsHighPrecision = isHighPrecision;
         this.mBatchIndex = 0;
         this.mArrayIndex = 0;
 

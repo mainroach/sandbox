@@ -28,7 +28,7 @@ NOTE Needle is DISABLED by default.
 
 Call `Needle.init` with the number of up-front samples you want to allocate for:
 
-` Needle.init(10000,false);`
+`Needle.init(10000,false);`
 
 Note that 2nd parameter is a boolean value representing if needle should run in high-precision mode or not.
 
@@ -41,7 +41,7 @@ Note that 2nd parameter is a boolean value representing if needle should run in 
  
 Then you need to add begin/end scopes around blocks of code you are interested in timing:
 
-` Needle.begin("start of scope");
+`Needle.begin("start of scope");
 
      //....do some stuff
 
@@ -50,7 +50,7 @@ Then you need to add begin/end scopes around blocks of code you are interested i
     
 Also fine to nest Needle scopes:
 
-` Needle.begin("start of scope");
+`Needle.begin("start of scope");
 
     Needle.begin("MORE scope");
 
@@ -63,7 +63,7 @@ Also fine to nest Needle scopes:
 
 To clean/reset Needle simply call:
 
-` needle.init(..) `
+`needle.init(..) `
 
 again to clean and resue it immediatly.
 
