@@ -15,15 +15,15 @@ Needle.js focuses on being fast-first, not being polyfilled or functional. It's 
 
 1. Reduces memory-churn by using a dynamic array of bucketed samples; allowing you to pre-allocate, and also add samples as you run.
 
-2. Takes advantage of the fact that static strings should be hashed in JS already. So doing being("foo") will just pass a reference around. That being said being("foo" + str(entity.ID)) will add a NEW string to the JS heap, EACH call; So try to stay using static strings.
+2. Takes advantage of the fact that static strings should be hashed in JS already. So doing begin("foo") will just pass a reference around. That being said begin("foo" + str(entity.ID)) will add a NEW string to the JS heap, EACH call; So try to stay using static strings.
 
-3. Utilizes typed arrays and direct memory assignment rather than new-object creation
+3. Utilizes typed arrays and direct memory assignment rather than new-object creation.
 
 
 
 ## USAGE
 
-To Enable/Disable Needle, call the `needle.enable` and `needle.disable()` functions. 
+To Enable/Disable Needle, call the `needle.enable()` and `needle.disable()` functions. 
 NOTE Needle is DISABLED by default.
 
 Call `Needle.init` with the number of up-front samples you want to allocate for:
@@ -42,26 +42,26 @@ Note that 2nd parameter is a boolean value representing if needle should run in 
 Then you need to add begin/end scopes around blocks of code you are interested in timing:
 
 `
-Needle.begin("start of scope");
+    Needle.begin("start of scope");
 
-     //....do some stuff
+        //....do some stuff
 
-Needle.end()
+    Needle.end()
 `
 
     
 Also fine to nest Needle scopes:
 
 `
-Needle.begin("start of scope");
+    Needle.begin("start of scope");
 
-    Needle.begin("MORE scope");
+        Needle.begin("MORE scope");
 
-    //....do some stuff
+            //....do some stuff
+
+        Needle.end()
 
     Needle.end()
-
-Needle.end()
 `
 
 
@@ -75,5 +75,5 @@ again to clean and resue it immediatly.
 
 ## DISCLAIMER
 
-*I've only tested this in CHROME 26 beta; I make no warrenties that it works in other browsers / versions
+*I've only tested this in CHROME 26 beta; I make no warranties that it works in other browsers / versions
 
