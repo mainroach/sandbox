@@ -17,7 +17,7 @@ Needle.js focuses on being fast-first, not being polyfilled or functional. It's 
 
 2. Takes advantage of the fact that static strings should be hashed in JS already. So doing being("foo") will just pass a reference around. That being said being("foo" + str(entity.ID)) will add a NEW string to the JS heap, EACH call; So try to stay using static strings.
 
-3. Note this library uses window.performance.now(); which is a high-frequency timer; but does add overhead (88% right now) to the overall sampling process.
+3. Utilizes typed arrays and direct memory assignment rather than new-object creation
 
 
 
@@ -41,16 +41,19 @@ Note that 2nd parameter is a boolean value representing if needle should run in 
  
 Then you need to add begin/end scopes around blocks of code you are interested in timing:
 
-`Needle.begin("start of scope");
+`
+Needle.begin("start of scope");
 
      //....do some stuff
 
- Needle.end()`
+Needle.end()
+`
 
     
 Also fine to nest Needle scopes:
 
-`Needle.begin("start of scope");
+`
+Needle.begin("start of scope");
 
     Needle.begin("MORE scope");
 
@@ -58,7 +61,8 @@ Also fine to nest Needle scopes:
 
     Needle.end()
 
- Needle.end()`
+Needle.end()
+`
 
 
 To clean/reset Needle simply call:

@@ -20,11 +20,28 @@ See the License for the specific language governing permissions and
 <script src="needle.js" ></script>
 <script>
 
+
+/*Returns the first function passed as an argument to the second, allowing you to adjust arguments, run code before and after, and conditionally execute the original function.*/
+needle.wrap = function(obj, func, label) {
+   return function() {
+        needle.begin(label);
+        //var args = [func].concat(Array.prototype.slice.call(arguments, 0));
+        var v = func.apply(obj, arguments);
+        needle.end();
+      return v;
+    };
+  };
+
 // Call this to inject needle samples into every function of an object in the page
 needle.inject = function()
 {
 	//here's a list of objects we don't care to hook; either because they aren't relevant, or they may cause issues (like console, needle, date, and performance)
-	var ignoreList={'window':1, 'needle':1,'console':1,'performance':1,'Date':1,'Chrome':1,'self':1,'top':1,'frames':1,'parent':1,'navigator':1,'webkitIndexedDB':1,'history':1,'document':1,'location':1,'external':1,'v8Intl':1,'clientInformation':1,'applicationCache':1,'indexedDB':1,'webkitNotifications':1,'webkitStorageInfo':1,'crypto':1,'styleMedia':1,"Intl":1,"chrome":1,'localStorage':1,'sessionStorage':1};
+	var ignoreList={
+            //don't touch these unless you want the world to explode
+        'window':1, 'needle':1,'console':1,'performance':1,'Date':1,
+        //touch these at your own risk.
+        'Chrome':1,'self':1,'top':1,'frames':1,'parent':1,'navigator':1,'webkitIndexedDB':1,'history':1,'document':1,'location':1,'external':1,'v8Intl':1,'clientInformation':1,'applicationCache':1,'indexedDB':1,'webkitNotifications':1,'webkitStorageInfo':1,'crypto':1,'styleMedia':1,"Intl":1,"chrome":1,'localStorage':1,'sessionStorage':1};
+
 	var objStack = [];
     for (var i in window) 
     {
@@ -57,43 +74,40 @@ needle.inject = function()
 
     		if (typeof obj[prop] != 'function') continue;
     		if ( obj[prop] == null) continue;
-			console.log (i + "::" + prop);
+			console.log ("-" + i + "::" + prop);
 
     		var safeName = "__orig__" + i + "::" + prop;
     		var lblName = i + "::" + prop;
        		window[safeName] = obj[prop]; // putting it in a safe place
-        	obj[prop] = function() 
-        		{ // creating wrapper
-            		needle.begin(lblName);
-            		var v = window[safeName].apply(obj, arguments); //invoke original
-            		needle.end();
-            		return v;
-        		};
+        	obj[prop] = needle.wrap(obj,window[safeName],lblName);
+
     	}
     }
 }
 
 var testing={
+    len:10,
 	abc:function()
 	{
-		var len = 100000;
+        var l = this.len;
 		var a;
-	    a = new Array(len);
-	    while (len-- > 0) 
+	    a = new Array(this.len);
+	    while (l-- > 0) 
 	    {
-	    	a[len] = this.def();
+	    	a[l] = this.def();
 	    }
 	    return a;
 	},
 	def:function()
 	{
-		var len = 100000;
+        var l = this.len;
 		var a;
-	    a = new Array(len);
-	    while (len-- > 0) 
+	    a = new Array(this.len);
+	    while (l-- > 0) 
 	    {
 	    	var k = Math.random();
-	        a[len] = Math.sin(k);
+	        a[l] = Math.sin(k);
+            console.log("Look Mah, wrapped functions!");
 	    }
 	    return a;
 	}
@@ -104,7 +118,7 @@ needle.inject();
 needle.enable();
 needle.init(10000);
 
-testing.def();
+testing.abc();
 
 var expData = needle.getExportReadyData();
 document.getElementById("trace_results").innerHTML = needle.tracingPrint(expData);
