@@ -29,27 +29,28 @@ See the License for the specific language governing permissions and
 
 
 
+function pausecomp(millis)
+ {
+  var date = new Date();
+  var curDate = null;
+  do { curDate = new Date(); }
+  while(curDate-date < millis);
+}
 
 function makeWithCountDownFine() 
 {
-    var len = 100;
     needle.beginFine("makeWithCountDownPost");
-    var a;
 
-    a = new Array(len);
-    while (len-- > 0) 
+    for(var i =0; i < 3; i++)
     {
         needle.beginFine("innerLoop");
 
-        var k = Math.random();
-        a[len] = Math.sin(k) + Math.cos(k);
-
+        pausecomp(3);
         needle.endFine();
 
     }
     
     needle.endFine();
-    return a;
     
 }
 
