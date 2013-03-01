@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 #limitations under the License.*/-->
 <html>
 <div id="needle_results">working...</div>
+
 </html>
 
 <script src="needle.js" ></script>
@@ -107,8 +108,11 @@ function makeWithCountDownPostConsoleTime(len)
     
 }
 
+
 var numSamples = 10;
-var numLoops = 10000;	//let's run X times
+var numLoops = 5;	//let's run X times
+needle.enable (); //Enable Needle
+
 ///////////////////////////////////////////////
 //determine what our baseline perf is
 var dv = 0;
@@ -162,7 +166,7 @@ dv = 0;
 for(var i =0; i < numSamples; i++)
 {
 	st = window.performance.now();
-	makeWithCountDownPostConsoleTime(numLoops);
+	//makeWithCountDownPostConsoleTime(numLoops);
 	dt = window.performance.now() - st;
 	dv += dt;
 }
@@ -187,7 +191,9 @@ str += ("console.time Overhead per event: " + consTime + " / " + expData.length 
 
 document.getElementById("needle_results").innerHTML = str;
 
-//needle.consolePrint(expData);
+
+
+
 
 </script>
 

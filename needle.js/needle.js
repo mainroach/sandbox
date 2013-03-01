@@ -42,8 +42,13 @@ var needle={
             this.addBatch();
 
         this.mCurrBatch = this.mBatches[0];
+
     },
 
+    
+   
+
+   
     // Add a batch, mostly internal only...
     addBatch:function()
     {
@@ -61,8 +66,9 @@ var needle={
         this.mBatches.push(btc);
     },
 
+
     // Called at the start of a scope, returns < 1ms precision
-    beginFine:function(name)
+    _beginFine:function(name)
     {
         var btch = this.mCurrBatch;
 
@@ -88,7 +94,7 @@ var needle={
     },
 
     // Called at the end of a scope, returns < 1ms precision
-    endFine:function()
+    _endFine:function()
     {
         var btch = this.mCurrBatch;
 
@@ -113,7 +119,7 @@ var needle={
     },
 
      // Called at the start of a scope, returns 1ms precision
-    beginCoarse:function(name)
+    _beginCoarse:function(name)
     {
         var btch = this.mCurrBatch;
 
@@ -139,7 +145,7 @@ var needle={
     },
 
     // Called at the end of a scope, returns 1ms precision.
-    endCoarse:function()
+    _endCoarse:function()
     {
         var btch = this.mCurrBatch;
 
@@ -163,53 +169,69 @@ var needle={
         }
     },
 
-    // Call this at the end of sampling to get a list of all samples in a usable form
-    // don't expect this to be fast; Only call at the end of profiling.
-    getExportReadyData:function()
-    {
-        var oneArray = new Array();
-        for (var q =0; q < this.mBatchIndex; q++)
-        {
-            var bkt = this.mBatches[q];
-            for(var i =0; i < this.mArraySize; i++)
-            {
-                if(bkt.mSamType[i] == 0)
-                    continue;
-                 var evt = {
-                    type:bkt.mSamType[i],
-                    name:bkt.mSamName[i],
-                    time:bkt.mSamTime[i]
-                };
-                oneArray.push(evt);
-            }
-        }
+     // public accessors - we use vtable swaps rather than enabled/disabled flags
+    beginCoarse : function(name){},
+    endCoarse : function(){},
+    beginFine : function(name){},
+    endFine : function(){},
 
-        var bkt = this.mBatches[this.mBatchIndex];
-            for(var i =0; i < this.mArrayIndex; i++)
-            {
-                if(bkt.mSamType[i] == 0)
-                    continue;
-                 var evt = {
-                    type:bkt.mSamType[i],
-                    name:bkt.mSamName[i],
-                    time:bkt.mSamTime[i]
-                };
-                oneArray.push(evt);
-            }
-        
-        return oneArray;
+    // needle is disabled by default, call this function to 
+    enable:function()
+    {
+        this.beginCoarse = this._beginCoarse;
+        this.endCoarse = this._endCoarse;
+        this.beginFine = this._beginFine;
+        this.endFine = this._endFine;
     },
 
     // once you've added needle sampling code all over your codebase, you can null it's influence out via calling needle.makeBlunt
     // this will stub out the begin/end functions so that you don't incur overhead
-    makeBlunt:function()
+    disable:function()
     {
         this.beginCoarse = function(name){};
         this.endCoarse = function(){};
         this.beginFine = function(name){};
         this.endFine = function(){};
+    },
+
+
+};
+
+// Call this at the end of sampling to get a list of all samples in a usable form
+// don't expect this to be fast; Only call at the end of profiling.
+needle.getExportReadyData =function()
+{
+    var oneArray = new Array();
+    for (var q =0; q < this.mBatchIndex; q++)
+    {
+        var bkt = this.mBatches[q];
+        for(var i =0; i < this.mArraySize; i++)
+        {
+            if(bkt.mSamType[i] == 0)
+                continue;
+             var evt = {
+                type:bkt.mSamType[i],
+                name:bkt.mSamName[i],
+                time:bkt.mSamTime[i]
+            };
+            oneArray.push(evt);
+        }
     }
 
+    var bkt = this.mBatches[this.mBatchIndex];
+        for(var i =0; i < this.mArrayIndex; i++)
+        {
+            if(bkt.mSamType[i] == 0)
+                continue;
+             var evt = {
+                type:bkt.mSamType[i],
+                name:bkt.mSamName[i],
+                time:bkt.mSamTime[i]
+            };
+            oneArray.push(evt);
+        }
+        
+    return oneArray;
 };
 
 // Right now simply dumps linear results out to console; should do something smarter with outputing a about:tracing layout.
@@ -231,4 +253,46 @@ needle.consolePrint = function(samples)
             console.log(lastEvt.name + ": " + delta + "ms");
         }   
     }
+};
+
+
+needle.tracingPrint = function(samples)
+{
+    var traceString = "[";
+    var traceEventGen = function(name,time,isStart){
+        var evt = {name:name,pid:42,tid:"0xBEEF",ts:time,ph:"B"};
+        if(!isStart)
+            evt.ph = "E"
+        return JSON.stringify(evt);
+    };
+
+    var stack = new Array();
+    for (var q =0; q < samples.length; q++)
+    {
+        var evt = samples[q];
+        if(evt.type == eNeedleEventType.cBegin)
+        {
+            traceString += traceEventGen(evt.name,evt.time,true) + ",\n";
+        }
+        else if(evt.type == eNeedleEventType.cEnd)
+        {
+            traceString += traceEventGen(evt.name,evt.time,false) + ",\n";
+        }   
+    }
+
+    traceString += "{}]";
+    return traceString;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

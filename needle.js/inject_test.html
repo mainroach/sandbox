@@ -1,0 +1,112 @@
+<!--/*Copyright 2013 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+#limitations under the License.*/-->
+<html>
+<div id="trace_results"></div>
+</html>
+
+<script src="needle.js" ></script>
+<script>
+
+// Call this to inject needle samples into every function of an object in the page
+needle.inject = function()
+{
+	//here's a list of objects we don't care to hook; either because they aren't relevant, or they may cause issues (like console, needle, date, and performance)
+	var ignoreList={'window':1, 'needle':1,'console':1,'performance':1,'Date':1,'Chrome':1,'self':1,'top':1,'frames':1,'parent':1,'navigator':1,'webkitIndexedDB':1,'history':1,'document':1,'location':1,'external':1,'v8Intl':1,'clientInformation':1,'applicationCache':1,'indexedDB':1,'webkitNotifications':1,'webkitStorageInfo':1,'crypto':1,'styleMedia':1,"Intl":1,"chrome":1,'localStorage':1,'sessionStorage':1};
+	var objStack = [];
+    for (var i in window) 
+    {
+    	if(i != 'testing') continue;
+    	if (typeof window[i] != 'object') continue;
+
+    	var obj = window[i];
+    	if(i in ignoreList) 
+    		continue; 	//don't inject on us!
+
+		objStack.push([obj,i]);
+	}
+
+	while(objStack.length >0)
+	{
+		var b = objStack.pop();
+		var obj = b[0];
+		var i = b[1];
+    	for(var prop in obj)
+    	{
+    		if (typeof obj[prop] == 'object')
+    		{
+    			var obj = obj[prop];
+    			if(i in ignoreList) 
+    				continue; 	//don't inject on us!
+
+				objStack.push(obj);
+				continue;
+			}
+
+    		if (typeof obj[prop] != 'function') continue;
+    		if ( obj[prop] == null) continue;
+			console.log (i + "::" + prop);
+
+    		var safeName = "__orig__" + i + "::" + prop;
+    		var lblName = i + "::" + prop;
+       		window[safeName] = obj[prop]; // putting it in a safe place
+        	obj[prop] = function() 
+        		{ // creating wrapper
+            		needle.beginCoarse(lblName);
+            		var v = window[safeName].apply(obj, arguments); //invoke original
+            		needle.endCoarse();
+            		return v;
+        		};
+    	}
+    }
+}
+
+var testing={
+	abc:function()
+	{
+		var len = 100000;
+		var a;
+	    a = new Array(len);
+	    while (len-- > 0) 
+	    {
+	    	a[len] = this.def();
+	    }
+	    return a;
+	},
+	def:function()
+	{
+		var len = 100000;
+		var a;
+	    a = new Array(len);
+	    while (len-- > 0) 
+	    {
+	    	var k = Math.random();
+	        a[len] = Math.sin(k);
+	    }
+	    return a;
+	}
+	
+}
+
+needle.inject();
+needle.enable();
+needle.init(10000);
+
+testing.def();
+
+var expData = needle.getExportReadyData();
+document.getElementById("trace_results").innerHTML = needle.tracingPrint(expData);
+
+
+
+</script>
