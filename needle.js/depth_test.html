@@ -1,0 +1,86 @@
+<!--/*Copyright 2013 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+#limitations under the License.*/-->
+<html>
+<div id="needle_results" style="width:100%;height:256px;overflow:auto;">working...</div>
+
+</html>
+
+<script src="needle.js" ></script>
+<script>
+
+
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//WORST CASE TESTING - No warmup since dev's won't work that way
+
+
+
+
+function makeWithCountDownFine() 
+{
+    var len = 100;
+    needle.beginFine("makeWithCountDownPost");
+    var a;
+
+    a = new Array(len);
+    while (len-- > 0) 
+    {
+        needle.beginFine("innerLoop");
+
+        var k = Math.random();
+        a[len] = Math.sin(k) + Math.cos(k);
+
+        needle.endFine();
+
+    }
+    
+    needle.endFine();
+    return a;
+    
+}
+
+function deepCrow(currCount)
+{
+    if(currCount >3) return;
+    needle.beginCoarse("deepCrow");
+
+    makeWithCountDownFine();
+    deepCrow(currCount + 1);
+
+    needle.endCoarse();
+}
+
+
+needle.init(10000);
+needle.enable();
+
+deepCrow(0);
+
+
+
+var expData = needle.getExportReadyData();
+
+var str = needle.tracingPrint(expData);
+
+document.getElementById("needle_results").innerHTML = str;
+
+
+
+
+
+</script>
+

@@ -30,6 +30,8 @@ var needle={
     mArrayIndex : 0,    //counter in this bucket
 
     mBatches:[],
+    mDateNowStamp:0,
+    mPerfNowStamp:0,
 
     init:function(preAllocSamples)
     {
@@ -43,6 +45,8 @@ var needle={
 
         this.mCurrBatch = this.mBatches[0];
 
+        this.mDateNowStamp = Date.now();
+        this.mPerfNowStamp = window.performance.now();
     },
 
     
@@ -74,7 +78,7 @@ var needle={
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cBegin;
         btch.mSamName[this.mArrayIndex] = name;
-        btch.mSamTime[this.mArrayIndex] = window.performance.now();
+        btch.mSamTime[this.mArrayIndex] = window.performance.now() - this.mPerfNowStamp;
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -99,7 +103,7 @@ var needle={
         var btch = this.mCurrBatch;
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
-        btch.mSamTime[this.mArrayIndex] = window.performance.now();
+        btch.mSamTime[this.mArrayIndex] = window.performance.now() - this.mPerfNowStamp;
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -125,7 +129,7 @@ var needle={
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cBegin;
         btch.mSamName[this.mArrayIndex] = name;
-        btch.mSamTime[this.mArrayIndex] = Date.now();
+        btch.mSamTime[this.mArrayIndex] = Date.now() - this.mDateNowStamp;
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -150,7 +154,7 @@ var needle={
         var btch = this.mCurrBatch;
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
-        btch.mSamTime[this.mArrayIndex] = Date.now();
+        btch.mSamTime[this.mArrayIndex] = Date.now() - this.mDateNowStamp;
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -272,11 +276,13 @@ needle.tracingPrint = function(samples)
         var evt = samples[q];
         if(evt.type == eNeedleEventType.cBegin)
         {
+            stack.push(evt.name);
             traceString += traceEventGen(evt.name,evt.time,true) + ",\n";
         }
         else if(evt.type == eNeedleEventType.cEnd)
         {
-            traceString += traceEventGen(evt.name,evt.time,false) + ",\n";
+            var nm = stack.pop();
+            traceString += traceEventGen(nm,evt.time,false) + ",\n";
         }   
     }
 
