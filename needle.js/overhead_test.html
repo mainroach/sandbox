@@ -40,51 +40,29 @@ function makeWithCountDownPostClean(len)
     return a;   
 }
 
-function makeWithCountDownCoarse(len) 
+function makeWithCountDown(len) 
 {
 
-	needle.beginCoarse("makeWithCountDownPost");
+	needle.begin("makeWithCountDownPost");
     var a;
 
     a = new Array(len);
     while (len-- > 0) 
     {
-    	needle.beginCoarse("innerLoop");
+    	needle.begin("innerLoop");
 
     	var k = Math.random();
         a[len] = Math.sin(k);
 
-        needle.endCoarse();
+        needle.end();
 
     }
     
-    needle.endCoarse();
+    needle.end();
     return a;
     
 }
 
-function makeWithCountDownFine(len) 
-{
-
-    needle.beginFine("makeWithCountDownPost");
-    var a;
-
-    a = new Array(len);
-    while (len-- > 0) 
-    {
-        needle.beginFine("innerLoop");
-
-        var k = Math.random();
-        a[len] = Math.sin(k);
-
-        needle.endFine();
-
-    }
-    
-    needle.endFine();
-    return a;
-    
-}
 
 function makeWithCountDownPostConsoleTime(len) 
 {
@@ -132,9 +110,9 @@ var pure = dv;
 dv = 0;
 for(var i =0; i < numSamples; i++)
 {
-	needle.init(10000);//clean needle each run
+	needle.init(10000,false);//clean needle each run
 	st = window.performance.now();
-	makeWithCountDownCoarse(numLoops);
+	makeWithCountDown(numLoops);
 	dt = window.performance.now() - st;
 	dv += dt;
 }
@@ -148,9 +126,9 @@ var overheadC = (needtimeC-pure);
 dv = 0;
 for(var i =0; i < numSamples; i++)
 {
-    needle.init(10000);//clean needle each run
+    needle.init(10000,true);//clean needle each run
     st = window.performance.now();
-    makeWithCountDownFine(numLoops);
+    makeWithCountDown(numLoops);
     dt = window.performance.now() - st;
     dv += dt;
 }

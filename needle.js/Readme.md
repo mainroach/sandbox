@@ -28,30 +28,37 @@ NOTE Needle is DISABLED by default.
 
 Call `Needle.init` with the number of up-front samples you want to allocate for:
 
-` Needle.init(10000);`
+` Needle.init(10000,false);`
+
+Note that 2nd parameter is a boolean value representing if needle should run in high-precision mode or not.
+
+* The Low precision mode will return timings a the 1ms resolution.
+
+* The High precision mode will return timings at < 1ms resolution, but will run almost 3x slower as a result.
+
 
 
  
 Then you need to add begin/end scopes around blocks of code you are interested in timing:
 
-` Needle.beginCoarse("start of scope");
+` Needle.begin("start of scope");
 
      //....do some stuff
 
- Needle.endCoarse()`
+ Needle.end()`
 
     
 Also fine to nest Needle scopes:
 
-` Needle.beginCoarse("start of scope");
+` Needle.begin("start of scope");
 
-    Needle.beginCoarse("MORE scope");
+    Needle.begin("MORE scope");
 
     //....do some stuff
 
-    Needle.endCoarse()
+    Needle.end()
 
- Needle.endCoarse()`
+ Needle.end()`
 
 
 To clean/reset Needle simply call:
@@ -60,17 +67,6 @@ To clean/reset Needle simply call:
 
 again to clean and resue it immediatly.
 
-
-## Choosing the right API
-
-Note that Needle provides two sets of APIs beginCoarse/endCoarse and beginFine/endFine.
-
-The *Coarse APIs will return timings a the 1ms resolution.
-
-The *Fine APIs will return timings at < 1ms resolution, but will run almost 3x slower as a result.
-
-
-The intent is that a developer will place the *Coarse versions of calls around scoping blocks that are fine with 1ms resolution, and the *Fine calls in places that need more details.
 
 
 ## DISCLAIMER

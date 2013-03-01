@@ -37,36 +37,36 @@ function pausecomp(millis)
   while(curDate-date < millis);
 }
 
-function makeWithCountDownFine() 
+function makeWithCountDown() 
 {
-    needle.beginFine("makeWithCountDownPost");
+    needle.begin("makeWithCountDownPost");
 
     for(var i =0; i < 3; i++)
     {
-        needle.beginFine("innerLoop");
+        needle.begin("innerLoop");
 
         pausecomp(3);
-        needle.endFine();
+        needle.end();
 
     }
     
-    needle.endFine();
+    needle.end();
     
 }
 
 function deepCrow(currCount)
 {
     if(currCount >3) return;
-    needle.beginCoarse("deepCrow");
+    needle.begin("deepCrow");
 
-    makeWithCountDownFine();
+    makeWithCountDown();
     deepCrow(currCount + 1);
 
-    needle.endCoarse();
+    needle.end();
 }
 
 
-needle.init(10000);
+needle.init(10000,true);
 needle.enable();
 
 deepCrow(0);

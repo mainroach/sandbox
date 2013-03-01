@@ -30,10 +30,10 @@ var needle={
     mArrayIndex : 0,    //counter in this bucket
 
     mBatches:[],
-    mDateNowStamp:0,
-    mPerfNowStamp:0,
 
-    init:function(preAllocSamples)
+    mIsHighPrecision:false,
+
+    init:function(preAllocSamples, isHighPrecision)
     {
         this.mBatchIndex = 0;
         this.mArrayIndex = 0;
@@ -44,13 +44,7 @@ var needle={
             this.addBatch();
 
         this.mCurrBatch = this.mBatches[0];
-
-        this.mDateNowStamp = Date.now();
-        this.mPerfNowStamp = window.performance.now();
     },
-
-    
-   
 
    
     // Add a batch, mostly internal only...
@@ -78,7 +72,7 @@ var needle={
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cBegin;
         btch.mSamName[this.mArrayIndex] = name;
-        btch.mSamTime[this.mArrayIndex] = window.performance.now() - this.mPerfNowStamp;
+        btch.mSamTime[this.mArrayIndex] = window.performance.now();
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -103,7 +97,7 @@ var needle={
         var btch = this.mCurrBatch;
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
-        btch.mSamTime[this.mArrayIndex] = window.performance.now() - this.mPerfNowStamp;
+        btch.mSamTime[this.mArrayIndex] = window.performance.now();
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -129,7 +123,7 @@ var needle={
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cBegin;
         btch.mSamName[this.mArrayIndex] = name;
-        btch.mSamTime[this.mArrayIndex] = Date.now() - this.mDateNowStamp;
+        btch.mSamTime[this.mArrayIndex] = Date.now();
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -154,7 +148,7 @@ var needle={
         var btch = this.mCurrBatch;
 
         btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
-        btch.mSamTime[this.mArrayIndex] = Date.now() - this.mDateNowStamp;
+        btch.mSamTime[this.mArrayIndex] = Date.now();
 
         this.mArrayIndex++;
         if(this.mArrayIndex  >= this.mArraySize)
@@ -174,28 +168,30 @@ var needle={
     },
 
      // public accessors - we use vtable swaps rather than enabled/disabled flags
-    beginCoarse : function(name){},
-    endCoarse : function(){},
-    beginFine : function(name){},
-    endFine : function(){},
-
+    begin : function(name){},
+    end : function(){},
+  
     // needle is disabled by default, call this function to 
     enable:function()
     {
-        this.beginCoarse = this._beginCoarse;
-        this.endCoarse = this._endCoarse;
-        this.beginFine = this._beginFine;
-        this.endFine = this._endFine;
+        if(!this.mIsHighPrecision)
+        {
+            this.begin = this._beginCoarse;
+            this.end = this._endCoarse;
+        }
+        else
+        {
+            this.begin = this._beginFine;
+            this.end = this._endFine;
+        }
     },
 
     // once you've added needle sampling code all over your codebase, you can null it's influence out via calling needle.makeBlunt
     // this will stub out the begin/end functions so that you don't incur overhead
     disable:function()
     {
-        this.beginCoarse = function(name){};
-        this.endCoarse = function(){};
-        this.beginFine = function(name){};
-        this.endFine = function(){};
+        this.begin = function(name){};
+        this.end = function(){};
     },
 
 

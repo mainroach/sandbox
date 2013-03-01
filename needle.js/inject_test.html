@@ -62,9 +62,9 @@ needle.inject = function()
        		window[safeName] = obj[prop]; // putting it in a safe place
         	obj[prop] = function() 
         		{ // creating wrapper
-            		needle.beginCoarse(lblName);
+            		needle.begin(lblName);
             		var v = window[safeName].apply(obj, arguments); //invoke original
-            		needle.endCoarse();
+            		needle.end();
             		return v;
         		};
     	}
