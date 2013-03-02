@@ -142,6 +142,22 @@ var overheadF = (needtimeF-pure);
 
 var expData = needle.getExportReadyData();
 
+//////////////////////////////////////////////
+//test needle disabled
+dv = 0;
+for(var i =0; i < numSamples; i++)
+{
+    needle.init(10000,true);//clean needle each run
+    needle.disable();
+    st = window.performance.now();
+    makeWithCountDown(numLoops);
+    dt = window.performance.now() - st;
+    dv += dt;
+}
+
+var needtimeD = dv/numSamples;
+var overheadD = (needtimeD-pure);
+
 
 /////////////////////////////////////////////
 //test console.time
@@ -168,6 +184,10 @@ str += ("needle coarse Overhead per event: " + overheadC + " / " + expData.lengt
 str += ("needle fine: " + needtimeF) + "ms<br>";
 str += ("needle fine Overhead: " + overheadF) + "ms<br>";
 str += ("needle fine Overhead per event: " + overheadF + " / " + expData.length + " events = <b>" + overheadF / (expData.length)) + "ms</b><br><br>";
+
+str += ("needle disabled: " + needtimeD) + "ms<br>";
+str += ("needle disabled Overhead: " + overheadD) + "ms<br>";
+str += ("needle disabled Overhead per event: " + overheadD + " / " + expData.length + " events = <b>" + overheadD / (expData.length)) + "ms</b><br><br>";
 
 str += ("console.time: " + consTime ) + "ms<br>";
 str += ("console.time Overhead per event: " + consTime + " / " + expData.length + " events = <b>" + consTime / (expData.length)) + "ms</b><br>";

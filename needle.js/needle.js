@@ -18,10 +18,6 @@ See the License for the specific language governing permissions and
     See github.com/mainroach for more.
 */
 
-var eNeedleEventType={
-    cBegin:1,
-    cEnd:2
-};
 
 var needle={
     mBatchIndex : 0,    //what's our current batch
@@ -71,7 +67,7 @@ var needle={
     {
         var btch = this.mCurrBatch;
 
-        btch.mSamType[this.mArrayIndex] = eNeedleEventType.cBegin;
+        btch.mSamType[this.mArrayIndex] = 1;
         btch.mSamName[this.mArrayIndex] = name;
         btch.mSamTime[this.mArrayIndex] = window.performance.now();
 
@@ -97,7 +93,7 @@ var needle={
     {
         var btch = this.mCurrBatch;
 
-        btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
+        btch.mSamType[this.mArrayIndex] = 2;
         btch.mSamTime[this.mArrayIndex] = window.performance.now();
 
         this.mArrayIndex++;
@@ -122,7 +118,7 @@ var needle={
     {
         var btch = this.mCurrBatch;
 
-        btch.mSamType[this.mArrayIndex] = eNeedleEventType.cBegin;
+        btch.mSamType[this.mArrayIndex] = 1;
         btch.mSamName[this.mArrayIndex] = name;
         btch.mSamTime[this.mArrayIndex] = Date.now();
 
@@ -148,7 +144,7 @@ var needle={
     {
         var btch = this.mCurrBatch;
 
-        btch.mSamType[this.mArrayIndex] = eNeedleEventType.cEnd;
+        btch.mSamType[this.mArrayIndex] = 2;
         btch.mSamTime[this.mArrayIndex] = Date.now();
 
         this.mArrayIndex++;
@@ -242,11 +238,11 @@ needle.consolePrint = function(samples)
     for (var q =0; q < samples.length; q++)
     {
         var evt = samples[q];
-        if(evt.type == eNeedleEventType.cBegin)
+        if(evt.type == 1)
         {
             stack.push(evt);
         }
-        else if(evt.type == eNeedleEventType.cEnd)
+        else if(evt.type == 2)
         {
             var lastEvt = stack.pop();
             var delta = (evt.time - lastEvt.time ) ;
