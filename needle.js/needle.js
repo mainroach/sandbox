@@ -267,12 +267,12 @@ needle.tracingPrint = function(samples)
     for (var q =0; q < samples.length; q++)
     {
         var evt = samples[q];
-        if(evt.type == eNeedleEventType.cBegin)
+        if(evt.type == 1)
         {
             stack.push(evt.name);
             traceString += traceEventGen(evt.name,evt.time,true) + ",\n";
         }
-        else if(evt.type == eNeedleEventType.cEnd)
+        else if(evt.type == 2)
         {
             var nm = stack.pop();
             traceString += traceEventGen(nm,evt.time,false) + ",\n";

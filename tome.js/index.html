@@ -1,0 +1,98 @@
+<script>
+
+var fullCallHash={};
+var replacementPreparer = function (error, trace) {
+  return trace;
+};
+
+String.prototype.hashCode = function(){
+    var hash = 0, i, char;
+    if (this.length == 0) return hash;
+    for (i = 0; i < this.length; i++) {
+        char = this.charCodeAt(i);
+        hash = ((hash<<5)-hash)+char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+};
+ 
+ //http://www.seejohncode.com/2012/09/04/javascript-callstacks/
+function callstack2() {
+  var capture;
+  var oldPreparer = Error.prepareStackTrace;
+  Error.prepareStackTrace = replacementPreparer;
+  try { capture.error } catch (e) {
+  	//this removes the last calling function
+    capture = e.stack.slice(1,e.stack.length);
+  }
+  Error.prepareStackTrace = oldPreparer;
+  	//console.log(capture);
+	return capture.toString();
+} 
+
+
+
+var objTr={};
+var heaps={};
+
+function genHeap(id)
+{
+	heaps[id] = {};
+}
+
+function alloc(typeobj, heapID, settings) 
+{
+	var cs = callstack2();
+	var hsh = cs.hashCode();
+	if(hsh in heaps[heapID])
+	{
+		heaps[heapID][hsh]++;
+	}
+	else
+	{
+		fullCallHash[hsh] = cs;
+		heaps[heapID][hsh] = 1;
+	}
+
+    var es = settings || {};
+    var obj = new(typeobj)(es);
+
+    objTr[obj]={id:heapID,stackHash:hsh};
+
+    return obj;
+}
+
+function free(obj)
+{
+	var sts = objTr[obj];
+
+	heaps[sts.id][sts.stackHash]--;
+
+	obj=null;
+	
+}
+
+
+///=====================
+///=====================
+///=====================
+///=====================
+///=====================
+///=====================
+genHeap(27);
+for(var i =0; i < 3; i++)
+{
+	//clm these are seperate callsites :(
+	var k = alloc(Array,27);	
+	free(k,27);
+	k=null;
+}
+
+var evt = {};
+allocMark(evt,27);
+
+//console.log(callSites);
+console.log(heaps);
+
+</script>
+
