@@ -49,12 +49,9 @@ var needle={
     {
         var btc = {};
         btc.mSamType = new Uint8Array(this.mArraySize);
-        btc.mSamName = new Array();
+        btc.mSamName = new Array(this.mArraySize);
         btc.mSamTime = new Float64Array(this.mArraySize);
 
-        
-        //pre-alloc string array
-        btc.mSamName.length = this.mArraySize;
 
 
         this.mCurrBatch = btc;

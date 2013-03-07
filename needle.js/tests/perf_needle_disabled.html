@@ -18,7 +18,7 @@ See the License for the specific language governing permissions and
 
 </html>
 
-<script src="needle.js" ></script>
+<script src="../needle.js" ></script>
 <script>
 
 
@@ -66,32 +66,9 @@ function makeWithCountDown(len)
 }
 
 
-function makeWithCountDownPostConsoleTime(len) 
-{
-
-	console.time("makeWithCountDownPost");
-    var a;
-
-    a = new Array(len);
-    while (len-- > 0) 
-    {
-    	console.time("innerLoop");
-
-    	var k = Math.random();
-        a[len] = Math.sin(k);
-
-        console.timeEnd("innerLoop");
-
-    }
-    
-    console.timeEnd("makeWithCountDownPost")
-    return a;
-    
-}
-
-
 var numSamples = 1000;
 var numLoops = 1000;	//let's run X times
+var numSamplesPerLoop = 2002;
 needle.enable (); //Enable Needle
 
 ///////////////////////////////////////////////
@@ -106,41 +83,6 @@ for(var i =0; i < numSamples; i++)
 }
 dv = dv/numSamples;
 var pure = dv;
-
-//////////////////////////////////////////////
-//test needle course
-dv = 0;
-for(var i =0; i < numSamples; i++)
-{
-	needle.init(10000,false);//clean needle each run
-    needle.enable();
-	st = window.performance.now();
-	makeWithCountDown(numLoops);
-	dt = window.performance.now() - st;
-	dv += dt;
-}
-
-var needtimeC = dv/numSamples;
-var overheadC = (needtimeC-pure);
-
-
-//////////////////////////////////////////////
-//test needle fine
-dv = 0;
-for(var i =0; i < numSamples; i++)
-{
-    needle.init(10000,true);//clean needle each run
-    needle.enable();
-    st = window.performance.now();
-    makeWithCountDown(numLoops);
-    dt = window.performance.now() - st;
-    dv += dt;
-}
-
-var needtimeF = dv/numSamples;
-var overheadF = (needtimeF-pure);
-
-var expData = needle.getExportReadyData();
 
 //////////////////////////////////////////////
 //test needle disabled
@@ -159,38 +101,16 @@ var needtimeD = dv/numSamples;
 var overheadD = (needtimeD-pure);
 
 
-/////////////////////////////////////////////
-//test console.time
-dv = 0;
-for(var i =0; i < numSamples; i++)
-{
-	st = window.performance.now();
-	makeWithCountDownPostConsoleTime(numLoops);
-	dt = window.performance.now() - st;
-	dv += dt;
-}
-var consTime = dv/numSamples;
-
 
 /////////////////////////////////////////////
 //dump data
 var str = "";
 str += ("No needle: " + pure ) + "ms<br><br>";
 
-str += ("needle coarse: " + needtimeC) + "ms<br>";
-str += ("needle coarse Overhead: " + overheadC) + "ms<br>";
-str += ("needle coarse Overhead per event: " + overheadC + " / " + expData.length + " events = <b>" + overheadC / (expData.length)) + "ms</b><br><br>";
-
-str += ("needle fine: " + needtimeF) + "ms<br>";
-str += ("needle fine Overhead: " + overheadF) + "ms<br>";
-str += ("needle fine Overhead per event: " + overheadF + " / " + expData.length + " events = <b>" + overheadF / (expData.length)) + "ms</b><br><br>";
-
 str += ("needle disabled: " + needtimeD) + "ms<br>";
 str += ("needle disabled Overhead: " + overheadD) + "ms<br>";
-str += ("needle disabled Overhead per event: " + overheadD + " / " + expData.length + " events = <b>" + overheadD / (expData.length)) + "ms</b><br><br>";
+str += ("needle disabled Overhead per event: " + overheadD + " / " + numSamplesPerLoop + " events = <b>" + overheadD / (numSamplesPerLoop)) + "ms</b><br><br>";
 
-str += ("console.time: " + consTime ) + "ms<br>";
-str += ("console.time Overhead per event: " + consTime + " / " + expData.length + " events = <b>" + consTime / (expData.length)) + "ms</b><br>";
 
 document.getElementById("needle_results").innerHTML = str;
 
