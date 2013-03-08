@@ -35,6 +35,8 @@ var needle={
         this.mBatchIndex = 0;
         this.mArrayIndex = 0;
 
+		this.mBatches.length = 0;
+		
         var numBatches = preAllocSamples / this.mArraySize;
 
         for(var i =0; i < numBatches; i++)
