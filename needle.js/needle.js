@@ -50,9 +50,9 @@ var needle={
     addBatch:function()
     {
         var btc = {};
-        btc.mSamType = new Uint8Array(this.mArraySize);
+        btc.mSamType = new Array(this.mArraySize);//Uint8Array(this.mArraySize);
         btc.mSamName = new Array(this.mArraySize);
-        btc.mSamTime = new Float64Array(this.mArraySize);
+        btc.mSamTime = new Array(this.mArraySize);//Float64Array(this.mArraySize);
 
 
 

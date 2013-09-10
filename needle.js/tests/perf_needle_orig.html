@@ -12,13 +12,57 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 #limitations under the License.*/-->
 <html>
-<div>This test will time Needle.js per-event overhead in FINE mode. In a seperate file to ensure manual reloads to cause lingering GC overhead...</div><hr>
+<div>This test will time Needle.js per-event overhead as the first version. In a seperate file to ensure manual reloads to cause lingering GC overhead...</div><hr>
 
 <div id="needle_results">working...</div>
 
 </html>
 
-<script src="../needle.js" ></script>
+<script>
+var needle={
+
+    mSamples:new Array(),
+
+    begin:function(name)
+    {
+        var evt={
+            name:name,
+            type:1,
+            time:Date.now()
+        };
+        this.mSamples.push(evt);
+    },
+
+    end:function()
+    {
+        var evt={
+            type:2,
+            time:Date.now()
+        };
+        this.mSamples.push(evt);
+    },
+    
+    flush:function()
+    {
+        var stack = new Array();
+        for (var q =0; q < samples.length; q++)
+        {
+            var evt = samples[q];
+            if(evt.type == 1)
+            {
+                stack.push(evt);
+            }
+            else if(evt.type == 2)
+            {
+                var lastEvt = stack.pop();
+                var delta = (evt.time - lastEvt.time ) ;
+
+                console.log(lastEvt.name + ": " + delta + "ms");
+            }   
+        }
+    }   
+};
+</script>
 <script>
 
 
@@ -67,10 +111,9 @@ function makeWithCountDown(len)
 
 
 
-
-var numSamples = 200;
-var numLoops = 10000;   //let's run X times
-needle.enable (); //Enable Needle
+var numSamples = 1000;
+var numLoops = 10000;	//let's run X times
+var sampleDiv = numLoops + 2;
 
 ///////////////////////////////////////////////
 //determine what our baseline perf is
@@ -85,24 +128,23 @@ for(var i =0; i < numSamples; i++)
 dv = dv/numSamples;
 var pure = dv;
 
-
 //////////////////////////////////////////////
-//test needle fine
+//test needle course
 dv = 0;
 for(var i =0; i < numSamples; i++)
 {
-    needle.init(10000,true);//clean needle each run
-    needle.enable();
-    st = window.performance.now();
-    makeWithCountDown(numLoops);
-    dt = window.performance.now() - st;
-    dv += dt;
+	
+	st = window.performance.now();
+	makeWithCountDown(numLoops);
+	dt = window.performance.now() - st;
+	dv += dt;
 }
 
-var needtimeF = dv/numSamples;
-var overheadF = (needtimeF-pure);
+var needtimeC = dv/numSamples;
+var overheadC = (needtimeC-pure);
 
-var expData = needle.getExportReadyData();
+
+
 
 
 /////////////////////////////////////////////
@@ -110,9 +152,9 @@ var expData = needle.getExportReadyData();
 var str = "";
 str += ("No needle: " + pure ) + "ms<br><br>";
 
-str += ("needle fine: " + needtimeF) + "ms<br>";
-str += ("needle fine Overhead: " + overheadF) + "ms<br>";
-str += ("needle fine Overhead per event: " + overheadF + " / " + expData.length + " events = <b>" + overheadF / (expData.length)) + "ms</b><br><br>";
+str += ("needle coarse: " + needtimeC) + "ms<br>";
+str += ("needle coarse Overhead: " + overheadC) + "ms<br>";
+str += ("needle coarse Overhead per event: " + overheadC + " / " + sampleDiv + " events = <b>" + overheadC / (sampleDiv)) + "ms</b><br><br>";
 
 
 document.getElementById("needle_results").innerHTML = str;
